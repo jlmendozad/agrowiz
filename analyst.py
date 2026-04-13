@@ -5,10 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
-<<<<<<< HEAD
 # PROMPT ESPECIALIZADO: Aquí es donde ocurre la magia para DISAGRO
-=======
->>>>>>> fa8b515 (refactor: preparing local changes for synchronization)
 DISAGRO_ANALYST_PROMPT = """
 You are the Senior Strategy Consultant for Disagro. 
 Analyze the provided agriculture news and explain its CRITICAL IMPORTANCE for Disagro.
