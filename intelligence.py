@@ -10,30 +10,52 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 JINA_KEY = os.getenv('JINA_API_KEY')
 
+<<<<<<< HEAD
 # Importamos el analista (asegúrate de que el archivo analyst.py exista)
 try:
     from analyst import analyze_strategic_impact
 except ImportError:
     print("⚠️ [ADVERTENCIA] No se pudo importar analyst.py")
+=======
+# Importamos el analista BI
+try:
+    from analyst import analyze_strategic_impact
+except ImportError:
+    print("⚠️ [WARNING] analyst.py could't be imported")
+>>>>>>> fa8b515 (refactor: preparing local changes for synchronization)
 
 def get_raw_news_list():
     """Diagnóstico usando el formato de URL validado: s.jina.ai/word+word"""
     try:
+<<<<<<< HEAD
         print("\n" + "-"*30 + " [ INICIO DIAGNÓSTICO ] " + "-"*30, flush=True)
         
         # Formato manual para asegurar los signos '+' que funcionaron
+=======
+        print("\n" + "-"*30 + " [ STARTING ANALYSIS ] " + "-"*30, flush=True)
+        
+        # Formato manual agregar signo + en la query del url
+>>>>>>> fa8b515 (refactor: preparing local changes for synchronization)
         query = "latest+agriculture+news+Central+America"
         search_url = f"https://s.jina.ai/{query}"
         
         headers = {"Accept": "application/json", "Authorization": f"Bearer {JINA_KEY}"}
         
+<<<<<<< HEAD
         print(f"📡 [LOG] Petición Jina (Formato Validado): {search_url}", flush=True)
+=======
+        print(f"📡 [LOG] Query to Jina (Formato is OK): {search_url}", flush=True)
+>>>>>>> fa8b515 (refactor: preparing local changes for synchronization)
         response = requests.get(search_url, headers=headers, timeout=30)
         print(f"📊 [LOG] Status Code: {response.status_code}", flush=True)
         
         if response.status_code == 200:
             data = response.json().get('data', [])[:5] 
+<<<<<<< HEAD
             print(f"✅ [LOG] Éxito. {len(data)} noticias obtenidas.", flush=True)
+=======
+            print(f"✅ [LOG] Success. {len(data)} news obtained.", flush=True)
+>>>>>>> fa8b515 (refactor: preparing local changes for synchronization)
             print(f"🏁 [LOG] DIAGNÓSTICO FINALIZADO.", flush=True)
             return [{"title": item.get('title'), "url": item.get('url')} for item in data]
         
@@ -48,7 +70,10 @@ def get_raw_news_list():
         ]
 
 def fetch_all_news(topic="agriculture"):
+<<<<<<< HEAD
     """Ciclo estratégico optimizado con PARALELISMO para mayor velocidad"""
+=======
+>>>>>>> fa8b515 (refactor: preparing local changes for synchronization)
     try:
         print("\n" + "="*60, flush=True)
         print(f"🚀 [SISTEMA] INICIANDO CICLO ESTRATÉGICO PARALELO", flush=True)
@@ -58,7 +83,11 @@ def fetch_all_news(topic="agriculture"):
         clean_topic = topic.replace(" ", "+")
         cache_buster = random.randint(1, 1000)
     
+<<<<<<< HEAD
         # Construimos el query dinámico manteniendo tus filtros de calidad
+=======
+        # Construccion del query
+>>>>>>> fa8b515 (refactor: preparing local changes for synchronization)
         query = f"{clean_topic}+logistics+news+Central+America+2026?cb={cache_buster}"
         search_url = f"https://s.jina.ai/{query}"
         headers = {"Accept": "application/json", "Authorization": f"Bearer {JINA_KEY}"}
@@ -71,7 +100,10 @@ def fetch_all_news(topic="agriculture"):
         data = response.json().get('data', [])[:5]
         print(f"📊 [LOG] Analizando {len(data)} noticias simultáneamente...", flush=True)
 
+<<<<<<< HEAD
         # Usamos ThreadPoolExecutor para que las 5 noticias se analicen al mismo tiempo
+=======
+>>>>>>> fa8b515 (refactor: preparing local changes for synchronization)
         with ThreadPoolExecutor() as executor:
             futures = []
             for item in data:

@@ -38,13 +38,9 @@ def get_guatemala_time():
     return datetime.datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')
 
 async def send_log(ctx, activity_type, details):
-    """
-    Centraliza los logs: los imprime en consola con formato profesional.
-    """
+    """Imprime logs en consola"""
     time_gt = get_guatemala_time()
     user = ctx.author.name
-    
-    # Este formato se verá parecido al de tu terminal en la imagen image_213ca7.png
     console_log = f"🕒 [{time_gt}] | 👤 USER: {user} | 🚩 TYPE: {activity_type} | 📝 INFO: {details}"
     print(console_log)
     
@@ -76,10 +72,9 @@ async def list_news(ctx):
             await asyncio.wait([spinner_task])
             is_backup = any("Reuters" in n['title'] for n in raw_news)
             await status_msg.edit(content="⚠️ **Accessing secondary intelligence nodes.**" if is_backup else "✅ **Network scan successful.**")
-
             full_response = "### 🔍 Latest Industry Headlines:\n" + "\n".join([f"{i}. **{n['title']}**\n<{n['url']}>" for i, n in enumerate(raw_news, 1)])
             
-            # Chunking para evitar error 400
+            # Chunking para evitar error 400 por mas de 2000 caracteres en Discord
             for i in range(0, len(full_response), 1900):
                 await ctx.send(full_response[i:i+1900])
             
@@ -89,8 +84,7 @@ async def list_news(ctx):
                 user_name = ctx.author.name
                 error_trace = traceback.format_exc()
 
-                # 1. ESTO SOLO LO VES TÚ (En la terminal/consola de tu Mac)
-                # Aquí va todo el detalle técnico para que tú sepas qué falló
+                # Detalle del log
                 print(f"\n--- 🚨 LOG DE ERROR TÉCNICO (!list_news)---")
                 print(f"Time: {current_time} | User: {user_name}")
                 print(f"Error: {str(e)}")
@@ -119,14 +113,10 @@ async def news(ctx):
 
             news_storage[ctx.channel.id] = {"reports": reports, "index": 3}
             
-            # Procesamos los primeros 3 reportes
+            # se procesan los 3 primeros links
             for i, r in enumerate(reports[:3], 1):
-            # Punto 1: Separador visual entre noticias (solo si no es la primera)
                 if i > 1:
                     await ctx.send(f"\n{'='*35}\n")
-            
-            # El reporte 'r' ya viene con el Titular y Link gracias al Paso 1 y 2
-            # Punto 4 y 5: Sistema de seguridad (Chunking) para no cortar texto
                 if len(r) > 1900:
                     chunks = [r[i:i+1900] for i in range(0, len(r), 1900)]
                     for chunk in chunks:
@@ -134,7 +124,6 @@ async def news(ctx):
                 else:
                     await ctx.send(r)
 
-        # Mensaje final de cierre (Ajustado para el backlog)
             await ctx.send("\n_ _\n✅ **Strategic analysis for Disagro completed.**")
 
             if len(reports) > 3:
@@ -145,8 +134,7 @@ async def news(ctx):
                 user_name = ctx.author.name
                 error_trace = traceback.format_exc()
 
-                # 1. ESTO SOLO LO VES TÚ (En la terminal/consola de tu Mac)
-                # Aquí va todo el detalle técnico para que tú sepas qué falló
+                # Log técnico
                 print(f"\n--- 🚨 LOG DE ERROR TÉCNICO (!news) ---")
                 print(f"Time: {current_time} | User: {user_name}")
                 print(f"Error: {str(e)}")
@@ -163,7 +151,7 @@ async def news(ctx):
                 await ctx.send(friendly_msg)
 @bot.command()
 async def next(ctx):
-    # Verificamos si existen reportes guardados para este canal
+    # Verifica reportes en el canal
     channel_id = ctx.channel.id
     try:
         if channel_id not in news_storage or not news_storage[channel_id]["reports"]:
@@ -174,16 +162,15 @@ async def next(ctx):
         reports = data["reports"]
         start_index = data["index"]
 
-        # Si ya mostramos todos los reportes
+        # Solo si ya llegamos al final de la lista
         if start_index >= len(reports):
             await ctx.send("🏁 **You have reached the end of the current analyses.**")
             return
 
-        # Obtenemos los siguientes 2 reportes (o los que queden)
+        # Se obtienen los reportes pendientes, si hay
         next_reports = reports[start_index : start_index + 2]
         
         for i, r in enumerate(next_reports, 1):
-            # Mantenemos el separador visual y el chunking
             await ctx.send(f"\n{'='*35}\n")
             
             if len(r) > 1900:
@@ -192,7 +179,6 @@ async def next(ctx):
             else:
                 await ctx.send(r)
 
-        # Actualizamos el índice para la próxima vez
         news_storage[channel_id]["index"] = start_index + 2
         
         if news_storage[channel_id]["index"] < len(reports):
@@ -206,7 +192,7 @@ async def next(ctx):
 
 @bot.event
 async def on_command_error(ctx, error):
-    # Si el usuario escribe un comando que no existe
+    # error de comando, se escribe uno que no existe o es invalido
     if isinstance(error, commands.CommandNotFound):
         help_text = (
             "👋 **Welcome to Disagro Intelligence Agent**\n\n"
@@ -218,12 +204,11 @@ async def on_command_error(ctx, error):
         )
         await ctx.send(help_text)
     else:
-        # Para otros errores, los logueamos en la terminal
+        # Para otros errores, quedan en el lgo
         print(f"🚨 Error detectado: {error}")
 
 @bot.event
 async def on_message(message):
-    # 1. Ignoramos los mensajes del propio bot
     if message.author == bot.user:
         return
 
@@ -232,10 +217,9 @@ async def on_message(message):
     content = message.content
 
     # 2. LOG DE ACTIVIDAD GENERAL (Cualquier cosa que escriban)
-    # Esto se verá en tu terminal de Mac cada vez que alguien escriba
     print(f"🕒 [{time_gt}] | 👤 {user} wrote: '{content}'")
 
-    # 3. Si no es un comando (no empieza con !), enviamos el menú de ayuda profesional
+    # 3. Si no es un comando, enviamos el menú de ayuda
     if not content.startswith('!'):
         help_text = (
             f"Hello {message.author.display_name}, **Disagro Intelligence Agent** at your service. 🫡\n\n"
@@ -247,12 +231,11 @@ async def on_message(message):
         await message.channel.send(help_text)
         return
 
-    # 4. Si es un comando, le pedimos a Discord que lo procese normalmente
+    # 4. Si si es comando, se procesa normal
     await bot.process_commands(message)
 
 @bot.event
 async def on_guild_join(guild):
-    # Buscamos el primer canal de texto donde el bot pueda escribir
     for channel in guild.text_channels:
         if channel.permissions_for(guild.me).send_messages:
             current_time = get_guatemala_time()
@@ -274,7 +257,7 @@ async def on_guild_join(guild):
 
 @bot.command()
 async def about(ctx):
-    """Presentación formal del bot"""
+    """Presentación del bot"""
     current_time = get_guatemala_time()
     info_msg = (
         f"### 🛡️ AgroWiz System Information\n"
@@ -288,6 +271,5 @@ async def about(ctx):
     )
     await ctx.send(info_msg)
 
-# ESTA LÍNEA ES VITAL PARA QUE EL BOT ARRANQUE
 if __name__ == "__main__":
     bot.run(TOKEN)
