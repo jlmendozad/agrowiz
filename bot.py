@@ -18,6 +18,7 @@ intents = discord.Intents.default()
 intents.message_content = True 
 bot = commands.Bot(command_prefix='!', intents=intents)
 news_storage = {}
+news_cache = {}
 
 STRATEGIC_KEYWORDS = [
     "nitrogen fertilizer market trends 2026",
@@ -68,6 +69,7 @@ async def list_news(ctx):
 
             # Búsqueda de noticias
             raw_news = await asyncio.to_thread(get_raw_news_list)
+            news_cache[ctx.channel.id] = raw_news
             spinner_task.cancel()
             await asyncio.wait([spinner_task])
             is_backup = any("Reuters" in n['title'] for n in raw_news)
@@ -102,11 +104,16 @@ async def list_news(ctx):
 
 @bot.command()
 async def news(ctx):
-    search_query = random.choice(STRATEGIC_KEYWORDS)
-    await ctx.send("🔍 **Analyzing strategic sources for Disagro '{sarch_query}'...**")
+    cached_data = news_cache.get(ctx.channel.id)
+    if not cached_data:
+        await ctx.send("⚠️ **No strategic data in memory.** Please run `!list_news` first to identify current headlines.")
+        return
+    await ctx.send("🧐 **Analyzing previously listed strategic news for Disagro...**")
+    # search_query = random.choice(STRATEGIC_KEYWORDS)
+    # await ctx.send("🔍 **Analyzing strategic sources for Disagro '{sarch_query}'...**")
     async with ctx.typing():
         try:
-            reports = await asyncio.to_thread(fetch_all_news, search_query)
+            reports = await asyncio.to_thread(fetch_all_news, cached_data)
             if not reports:
                 await ctx.send("❌ No relevant news found at this moment.")
                 return
