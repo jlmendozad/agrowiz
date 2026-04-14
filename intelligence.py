@@ -54,23 +54,21 @@ def get_raw_news_list():
             {"title": "Central America Data", "url": "https://www.centralamericadata.com/"}
         ]
 
-def fetch_all_news(topic="agriculture"):
-    """Ciclo estratégico optimizado con PARALELISMO para mayor velocidad"""
+def fetch_all_news(input_data="agriculture"):
+    """Ciclo estratégico optimizado con soporte para MEMORIA o búsqueda nueva"""
     try:
         print("\n" + "="*60, flush=True)
-        print(f"🚀 [SISTEMA] INICIANDO CICLO ESTRATÉGICO PARALELO", flush=True)
+        print(f"🚀 [SISTEMA] INICIANDO CICLO ESTRATÉGICO", flush=True)
         print("="*60, flush=True)
 
+        # 1. DETECCIÓN DE DATOS (Arreglado el nombre de la variable)
         if isinstance(input_data, list):
-            # Si recibimos una lista, ya tenemos los datos, no buscamos en Jina
             data = input_data[:5]
             print(f"📊 [LOG] Usando {len(data)} noticias desde MEMORIA CACHÉ...", flush=True)
         else:
-            # Reemplazamos espacios por '+' para que la URL sea válida
-            clean_topic = topic.replace(" ", "+")
+            # Si es un string, hacemos la búsqueda normal
+            clean_topic = str(input_data).replace(" ", "+")
             cache_buster = random.randint(1, 1000)
-    
-            # Construimos el query dinámico manteniendo tus filtros de calidad
             query = f"{clean_topic}+logistics+news+Central+America+2026?cb={cache_buster}"
             search_url = f"https://s.jina.ai/{query}"
             headers = {"Accept": "application/json", "Authorization": f"Bearer {JINA_KEY}"}
@@ -79,19 +77,26 @@ def fetch_all_news(topic="agriculture"):
             if response.status_code != 200:
                 print(f"❌ [LOG] Error Jina {response.status_code}.", flush=True)
                 return []
-
             data = response.json().get('data', [])[:5]
-            print(f"📊 [LOG] Analizando {len(data)} noticias simultáneamente...", flush=True)
+            print(f"📊 [LOG] Analizando {len(data)} noticias de búsqueda nueva...", flush=True)
 
-        # Usamos ThreadPoolExecutor para que las 5 noticias se analicen al mismo tiempo
+        # 2. PROCESAMIENTO CON BLINDAJE (Aquí es donde pones lo de url vs link)
         with ThreadPoolExecutor() as executor:
             futures = []
             for item in data:
-                content = item.get('content', '')
-                url = item.get('url', 'No URL')
+                # BLINDAJE: Jina a veces usa 'content', a veces 'description'
+                content = item.get('content') or item.get('description') or ""
+                
+                # BLINDAJE: !list_news usa 'url', pero por si acaso buscamos 'link'
+                url = item.get('url') or item.get('link') or "No URL"
+                
                 title = item.get('title', 'Untitled News')
-                if len(content) > 200:
+
+                # Bajamos el requisito a 100 caracteres para ser menos estrictos
+                if len(content) > 100:
                     futures.append(executor.submit(analyze_strategic_impact, content, url, title))
+                else:
+                    print(f"⚠️ [LOG] Noticia saltada por contenido insuficiente: {title}", flush=True)
             
             all_reports = [f.result() for f in futures]
         
