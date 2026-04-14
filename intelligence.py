@@ -65,7 +65,7 @@ def fetch_all_news(topic="agriculture"):
             # Si recibimos una lista, ya tenemos los datos, no buscamos en Jina
             data = input_data[:5]
             print(f"📊 [LOG] Usando {len(data)} noticias desde MEMORIA CACHÉ...", flush=True)
-        else
+        else:
             # Reemplazamos espacios por '+' para que la URL sea válida
             clean_topic = topic.replace(" ", "+")
             cache_buster = random.randint(1, 1000)
