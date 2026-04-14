@@ -74,7 +74,7 @@ async def list_news(ctx):
             await asyncio.wait([spinner_task])
             is_backup = any("Reuters" in n['title'] for n in raw_news)
             await status_msg.edit(content="⚠️ **Accessing secondary intelligence nodes.**" if is_backup else "✅ **Network scan successful.**")
-            full_response = "### 🔍 Latest Industry Headlines:\n" + "\n".join([f"{i}. **{n['title']}**\n<{n['url']}>" for i, n in enumerate(raw_news, 1)])
+            full_response = "### 🔍 Latest Industry Headlines:\n" + "\n".join([f"{i}. **{n['title']}**\n<{n.get('url')}>" for i, n in enumerate(raw_news, 1)])
             
             # Chunking para evitar error 400 por mas de 2000 caracteres en Discord
             for i in range(0, len(full_response), 1900):

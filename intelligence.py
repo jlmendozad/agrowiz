@@ -20,9 +20,16 @@ def get_raw_news_list():
     """Diagnóstico usando el formato de URL validado: s.jina.ai/word+word"""
     try:
         print("\n" + "-"*30 + " [ INICIO DIAGNÓSTICO ] " + "-"*30, flush=True)
-        
-        # Formato manual para asegurar los signos '+' que funcionaron
-        query = "latest+agriculture+news+Central+America"
+        topics = [
+            "fertilizer market trends 2026",
+            "logistics freight Central America",
+            "agritech innovation",
+            "global urea price analysis",
+            "corn and soy trade logistics"
+        ]
+        selected_topic = random.choice(topics).replace(" ", "+")
+        cache_buster = random.randint(1, 10000)
+        query = f"{selected_topic}+news+Central+America+2026?cb={cache_buster}"
         search_url = f"https://s.jina.ai/{query}"
         
         headers = {"Accept": "application/json", "Authorization": f"Bearer {JINA_KEY}"}
