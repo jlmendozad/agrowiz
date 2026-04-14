@@ -43,7 +43,7 @@ async def send_log(ctx, activity_type, details):
     time_gt = get_guatemala_time()
     user = ctx.author.name
     console_log = f"🕒 [{time_gt}] | 👤 USER: {user} | 🚩 TYPE: {activity_type} | 📝 INFO: {details}"
-    print(console_log)
+    print(console_log, flush=True)
     
     return time_gt, user
 
