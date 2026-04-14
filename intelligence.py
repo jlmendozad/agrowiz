@@ -57,18 +57,20 @@ def get_raw_news_list():
 def fetch_all_news(input_data="agriculture"):
     """Ciclo estratégico optimizado con soporte para MEMORIA o búsqueda nueva"""
     try:
+        # Forzamos los prints para ver qué pasa en Railway
         print("\n" + "="*60, flush=True)
         print(f"🚀 [SISTEMA] INICIANDO CICLO ESTRATÉGICO", flush=True)
         print("="*60, flush=True)
 
-        # 1. DETECCIÓN DE DATOS (Arreglado el nombre de la variable)
+        # 1. DETECCIÓN DE DATOS
         if isinstance(input_data, list):
             data = input_data[:5]
-            print(f"📊 [LOG] Usando {len(data)} noticias desde MEMORIA CACHÉ...", flush=True)
+            print(f"📊 [LOG] Recibida LISTA de memoria con {len(data)} noticias.", flush=True)
         else:
-            # Si es un string, hacemos la búsqueda normal
+            # Si es un string (búsqueda nueva)
+            print(f"📡 [LOG] Iniciando búsqueda nueva para: {input_data}", flush=True)
             clean_topic = str(input_data).replace(" ", "+")
-            cache_buster = random.randint(1, 1000)
+            cache_buster = random.randint(1, 10000)
             query = f"{clean_topic}+logistics+news+Central+America+2026?cb={cache_buster}"
             search_url = f"https://s.jina.ai/{query}"
             headers = {"Accept": "application/json", "Authorization": f"Bearer {JINA_KEY}"}
@@ -78,33 +80,44 @@ def fetch_all_news(input_data="agriculture"):
                 print(f"❌ [LOG] Error Jina {response.status_code}.", flush=True)
                 return []
             data = response.json().get('data', [])[:5]
-            print(f"📊 [LOG] Analizando {len(data)} noticias de búsqueda nueva...", flush=True)
 
-        # 2. PROCESAMIENTO CON BLINDAJE (Aquí es donde pones lo de url vs link)
-        with ThreadPoolExecutor() as executor:
+        if not data:
+            print("⚠️ [LOG] No se encontraron datos para procesar.", flush=True)
+            return []
+
+        # 2. PROCESAMIENTO PARALELO CON BLINDAJE
+        all_reports = []
+        with ThreadPoolExecutor(max_workers=5) as executor:
             futures = []
             for item in data:
-                # BLINDAJE: Jina a veces usa 'content', a veces 'description'
-                content = item.get('content') or item.get('description') or ""
-                
-                # BLINDAJE: !list_news usa 'url', pero por si acaso buscamos 'link'
+                # Blindaje total de campos: buscamos en todas las opciones posibles
+                content = item.get('content') or item.get('description') or item.get('snippet') or ""
                 url = item.get('url') or item.get('link') or "No URL"
-                
-                title = item.get('title', 'Untitled News')
+                title = item.get('title') or "Untitled News"
 
-                # Bajamos el requisito a 100 caracteres para ser menos estrictos
-                if len(content) > 100:
+                # Si hay algo de contenido, lo mandamos a analizar
+                if len(content) > 50:
+                    print(f"🧠 [LOG] Enviando a GPT: {title[:40]}...", flush=True)
                     futures.append(executor.submit(analyze_strategic_impact, content, url, title))
                 else:
-                    print(f"⚠️ [LOG] Noticia saltada por contenido insuficiente: {title}", flush=True)
+                    print(f"⏩ [LOG] Saltando '{title[:30]}' por falta de contenido.", flush=True)
             
-            all_reports = [f.result() for f in futures]
+            # Recolectamos resultados
+            for future in futures:
+                try:
+                    res = future.result()
+                    if res:
+                        all_reports.append(res)
+                except Exception as fe:
+                    print(f"❌ [LOG] Error en hilo de análisis: {fe}", flush=True)
         
-        print("\n" + "="*60, flush=True)
-        print(f"🏁 [SISTEMA] CICLO FINALIZADO CON ÉXITO", flush=True)
+        print(f"🏁 [SISTEMA] CICLO FINALIZADO. Reportes generados: {len(all_reports)}", flush=True)
         print("="*60 + "\n", flush=True)
         return all_reports
 
     except Exception as e:
-        print(f"\n🚨 [ERROR] Fallo en el ciclo: {e}", flush=True)
+        # Esto nos dirá exactamente qué rompió el código en Railway
+        print(f"\n🚨 [CRITICAL ERROR] Fallo en fetch_all_news: {str(e)}", flush=True)
+        import traceback
+        print(traceback.format_exc(), flush=True)
         return []
