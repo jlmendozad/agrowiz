@@ -39,20 +39,19 @@ def get_raw_news_list():
         print(f"📊 [LOG] Status Code: {response.status_code}", flush=True)
         
         if response.status_code == 200:
-            data = response.json().get('data', [])[:5] 
+            data = response.json().get('data', [])[:5]
             print(f"✅ [LOG] Éxito. {len(data)} noticias obtenidas.", flush=True)
-            print(f"🏁 [LOG] DIAGNÓSTICO FINALIZADO.", flush=True)
-            return [{"title": item.get('title'), "url": item.get('url')} for item in data]
+            # Retornamos TODO el objeto para que 'fetch_all_news' tenga de donde sacar el contenido
+            return data
         
-        raise Exception(f"HTTP {response.status_code}")
+        # Si no es 200, forzamos el error para ver el log de abajo
+        print(f"⚠️ [LOG] Respuesta no exitosa de Jina: {response.status_code}", flush=True)
+        return []
 
     except Exception as e:
         print(f"🚨 [LOG] Fallback activado: {e}", flush=True)
         print(f"🏁 [LOG] DIAGNÓSTICO FINALIZADO (Modo Backup).", flush=True)
-        return [
-            {"title": "Reuters Agriculture News", "url": "https://www.reuters.com/markets/commodities/"},
-            {"title": "Central America Data", "url": "https://www.centralamericadata.com/"}
-        ]
+        return []
 
 def fetch_all_news(input_data="agriculture"):
     """Ciclo estratégico optimizado con soporte para MEMORIA o búsqueda nueva"""

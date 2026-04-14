@@ -53,6 +53,7 @@ async def on_ready():
 
 @bot.command()
 async def list_news(ctx):
+    await send_log(ctx, "COMMAND", "!list_news execution")
     async with ctx.typing():
         # Spinner
         status_msg = await ctx.send("🚀 **Initiating global search sequence...**")
