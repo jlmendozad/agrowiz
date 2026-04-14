@@ -85,24 +85,24 @@ def fetch_all_news(input_data="agriculture"):
             print("⚠️ [LOG] No se encontraron datos para procesar.", flush=True)
             return []
 
-        # 2. PROCESAMIENTO PARALELO CON BLINDAJE
+        # 2. PROCESAMIENTO PARALELO
         all_reports = []
         with ThreadPoolExecutor(max_workers=5) as executor:
             futures = []
             for item in data:
-                # Blindaje total de campos: buscamos en todas las opciones posibles
-                content = item.get('content') or item.get('description') or item.get('snippet') or ""
+                # BLINDAJE: Jina a veces manda la info en 'snippet' si no hay 'content'
+                # Al buscar en todos estos campos, nos aseguramos de no mandar un vacío
+                content = item.get('content') or item.get('snippet') or item.get('description') or "Detailed content available in source link."
+                
                 url = item.get('url') or item.get('link') or "No URL"
-                title = item.get('title') or "Untitled News"
+                title = item.get('title') or "Untitled Strategic News"
 
-                # Si hay algo de contenido, lo mandamos a analizar
-                if len(content) > 50:
-                    print(f"🧠 [LOG] Enviando a GPT: {title[:40]}...", flush=True)
-                    futures.append(executor.submit(analyze_strategic_impact, content, url, title))
-                else:
-                    print(f"⏩ [LOG] Saltando '{title[:30]}' por falta de contenido.", flush=True)
+                # MANDAR SIEMPRE: Quitamos el IF de longitud. 
+                # Si hay título o link, que GPT-4o trate de analizarlo.
+                print(f"🧠 [LOG] Forzando análisis de: {title[:40]}...", flush=True)
+                futures.append(executor.submit(analyze_strategic_impact, content, url, title))
             
-            # Recolectamos resultados
+            # Recolectamos resultados asegurando que no sean None
             for future in futures:
                 try:
                     res = future.result()
