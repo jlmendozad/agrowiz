@@ -108,9 +108,8 @@ async def news(ctx):
     if not cached_data:
         await ctx.send("⚠️ **No strategic data in memory.** Please run `!list_news` first to identify current headlines.")
         return
-    await ctx.send("🧐 **Analyzing previously listed strategic news for Disagro...**")
-    # search_query = random.choice(STRATEGIC_KEYWORDS)
-    # await ctx.send("🔍 **Analyzing strategic sources for Disagro '{sarch_query}'...**")
+    await ctx.send(f"🧐 **Analyzing previously listed strategic news for Disagro...**")
+
     async with ctx.typing():
         try:
             reports = await asyncio.to_thread(fetch_all_news, cached_data)
